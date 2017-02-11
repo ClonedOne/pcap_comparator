@@ -1,7 +1,7 @@
 from domain.reduced_pcap import ReducedPcap
 from pprint import pprint
-from copy import deepcopy
 import scapy.all as scapy
+import time
 import sys
 import os
 
@@ -104,13 +104,15 @@ def main():
         print 'no max num specified'
         max_num = None
 
+    time_start = time.time()
     dir_files, size = get_file_list(network_dir, max_num)
     print 'number of pcap files: ', len(dir_files)
     red_p_list = get_reduced_pcaps(dir_files, size)
     const_pckts = find_constant_packets(red_p_list, size)
     find_different_packets(const_pckts, red_p_list, size)
     output_on_file(red_p_list, const_pckts)
-
+    time_end = time.time()
+    print 'Time passed:', time_end - time_start
 
 if __name__ == '__main__':
     main()
