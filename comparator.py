@@ -4,6 +4,7 @@ import scapy.all as scapy
 import time
 import sys
 import os
+import gc
 
 
 def pcap_to_pckt_freqs(pcap, red_pcap):
@@ -22,6 +23,7 @@ def get_reduced_pcaps(dir_files, size):
         pcap_to_pckt_freqs(pcap, red_pcap)
         red_p_list.append(red_pcap)
         print "Reading files: {:.2f}".format(i/size)
+        gc.collect()
     return red_p_list
 
 
