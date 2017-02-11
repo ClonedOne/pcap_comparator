@@ -12,36 +12,37 @@ def pcap_to_pckt_freqs(pcap, red_pcap):
         red_pcap.packet_freqs[sum] = red_pcap.packet_freqs.get(sum, 0) + 1
 
 
-def get_reduced_pcaps(dir_files):
+def get_reduced_pcaps(dir_files, size):
     red_p_list = []
+    i = 0.0
     for net_log in dir_files:
+        i += 1
         pcap = scapy.rdpcap(net_log)
         red_pcap = ReducedPcap(pcap)
         pcap_to_pckt_freqs(pcap, red_pcap)
         red_p_list.append(red_pcap)
+        print "Reading files: {:.2f}".format(i/size)
     return red_p_list
 
 
-def find_constant_packets(red_p_list):
-    res_freqs = deepcopy(red_p_list[0].packet_freqs)
-    ref_keys = red_p_list[0].packet_freqs.keys()
+def find_constant_packets(red_p_list, size):
+    temp_key_list = []
+    i = 0.0
     for red_p in red_p_list:
-        cur_freqs = red_p.packet_freqs
-        for key in ref_keys:
-            if key not in cur_freqs and key in res_freqs:
-                res_freqs.pop(key)
-            elif key in res_freqs:
-                freq_res = res_freqs[key]
-                freq_cur = cur_freqs[key]
-                res_freqs[key] = min(freq_res, freq_cur)
-    return res_freqs
+        i += 1
+        temp_key_list.append(set(red_p.packet_freqs.keys()))
+        print "Finding Constants: {:.2f}".format(i / size)
+    return set.intersection(*temp_key_list)
 
 
-def find_different_packets(const_pckt_keys, red_p_list):
+def find_different_packets(const_pckt_keys, red_p_list, size):
+    i = 0.0
     for red_p in red_p_list:
+        i += 1
         cur_keys = set(red_p.packet_freqs.keys())
         diff = cur_keys.difference(const_pckt_keys)
         red_p.diff_pckts = diff
+        print "Finding Differences: {:.2f}".format(i / size)
 
 
 def get_file_list(network_dir, max_num):
@@ -58,10 +59,10 @@ def get_file_list(network_dir, max_num):
             continue
         res_files.append(os.path.join(network_dir, cur_file))
         counter += 1
-    return res_files
+    return res_files, len(res_files)
 
 
-def output_on_file(red_p_list):
+def output_on_file(red_p_list, const_pckts):
     with open('pcap_diff.txt', 'w') as out_file:
         out_file.write(
             '{:36}\t{:10}\t{:10}\t{:10}\t{:10}\t{:10}\n'.format(
@@ -84,6 +85,8 @@ def output_on_file(red_p_list):
                     str(red_p.num_other)
                 )
             )
+        out_file.write('\nConstant Summaries')
+        pprint(const_pckts, out_file)
 
 
 def main():
@@ -101,15 +104,12 @@ def main():
         print 'no max num specified'
         max_num = None
 
-    dir_files = get_file_list(network_dir, max_num)
+    dir_files, size = get_file_list(network_dir, max_num)
     print 'number of pcap files: ', len(dir_files)
-    red_p_list = get_reduced_pcaps(dir_files)
-    const_pckts = find_constant_packets(red_p_list)
-    with open('constant_pckts.txt', 'w') as out_const:
-        pprint(const_pckts, out_const)
-    const_pckt_keys = sorted(set(const_pckts.keys()))
-    find_different_packets(const_pckt_keys, red_p_list)
-    output_on_file(red_p_list)
+    red_p_list = get_reduced_pcaps(dir_files, size)
+    const_pckts = find_constant_packets(red_p_list, size)
+    find_different_packets(const_pckts, red_p_list, size)
+    output_on_file(red_p_list, const_pckts)
 
 
 if __name__ == '__main__':
