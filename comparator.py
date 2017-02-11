@@ -61,6 +61,31 @@ def get_file_list(network_dir, max_num):
     return res_files
 
 
+def output_on_file(red_p_list):
+    with open('pcap_diff.txt', 'w') as out_file:
+        out_file.write(
+            '{:36}\t{:10}\t{:10}\t{:10}\t{:10}\t{:10}\n'.format(
+                'Log file',
+                'Different',
+                'Num TCP',
+                'Num UDP',
+                'Num ICMP',
+                'Num Other'
+            )
+        )
+        for red_p in red_p_list:
+            out_file.write(
+                '{:36}\t{:10}\t{:10}\t{:10}\t{:10}\t{:10}\n'.format(
+                    red_p.name,
+                    str(len(red_p.diff_pckts)),
+                    str(red_p.num_tcp),
+                    str(red_p.num_udp),
+                    str(red_p.num_icmp),
+                    str(red_p.num_other)
+                )
+            )
+
+
 def main():
     if len(sys.argv) < 2:
         print 'please specify target directory'
@@ -74,18 +99,17 @@ def main():
         print 'max num: ', max_num
     else:
         print 'no max num specified'
-        max_num = 0
+        max_num = None
 
     dir_files = get_file_list(network_dir, max_num)
     print 'number of pcap files: ', len(dir_files)
     red_p_list = get_reduced_pcaps(dir_files)
     const_pckts = find_constant_packets(red_p_list)
-    print 'Constant keys with minimum values: '
-    pprint(const_pckts)
+    with open('constant_pckts.txt', 'w') as out_const:
+        pprint(const_pckts, out_const)
     const_pckt_keys = sorted(set(const_pckts.keys()))
     find_different_packets(const_pckt_keys, red_p_list)
-    for red_p in red_p_list:
-        print red_p.name, len(red_p.diff_pckts)
+    output_on_file(red_p_list)
 
 
 if __name__ == '__main__':
