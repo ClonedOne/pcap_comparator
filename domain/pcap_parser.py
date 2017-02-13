@@ -2,7 +2,6 @@ from domain.reduced_pcap import ReducedPcap
 from scapy.layers.inet import TCP, UDP
 from scapy.all import PcapReader
 import traceback
-import gc
 
 
 def get_reduced_pcaps(dir_files, size):
@@ -32,6 +31,5 @@ def get_reduced_pcaps(dir_files, size):
         red_p.num_arp = counter_arp
         red_p_list.append(red_p)
         print("Reading files: {:.2f}".format(i / size))
-        gc.collect()
 
     return red_p_list

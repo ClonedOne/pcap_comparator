@@ -1,9 +1,20 @@
-from pprint import pprint
 import os
 
 
-def get_file_list(network_dir, max_num):
+def get_set_to_process(file_path):
+    pcap_files = set()
+    with open(file_path, 'r') as in_file:
+        for line in in_file:
+            name = line.split()[0].strip()
+            pcap_files.add(name)
+    return pcap_files
+
+
+def get_file_list(network_dir, max_num, to_process):
     dir_files = sorted(os.listdir(network_dir))
+    if to_process is None:
+        to_process = [log_file[:-5] for log_file in dir_files]
+
     if len(dir_files) == 0 or max_num == 0:
         print('No pcap files to work on')
         exit()
@@ -14,8 +25,9 @@ def get_file_list(network_dir, max_num):
             break
         if cur_file[-5:] != '.pcap':
             continue
-        res_files.append(os.path.join(network_dir, cur_file))
-        counter += 1
+        if cur_file[:-5] in to_process:
+            res_files.append(os.path.join(network_dir, cur_file))
+            counter += 1
     return res_files, len(res_files)
 
 

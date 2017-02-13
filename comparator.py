@@ -26,9 +26,9 @@ def find_different_packets(const_pckt_keys, red_p_list, size):
 
 
 def main():
-    network_dir, max_num = general_utils.get_input(sys.argv)
+    network_dir, max_num, to_process = general_utils.get_input(sys.argv)
     time_start = time.time()
-    dir_files, size = file_utils.get_file_list(network_dir, max_num)
+    dir_files, size = file_utils.get_file_list(network_dir, max_num, to_process)
     print('number of pcap files: ', len(dir_files))
     red_p_list = get_reduced_pcaps(dir_files, size)
     const_pckts = find_constant_packets(red_p_list, size)
