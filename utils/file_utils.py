@@ -5,7 +5,7 @@ import os
 def get_file_list(network_dir, max_num):
     dir_files = sorted(os.listdir(network_dir))
     if len(dir_files) == 0 or max_num == 0:
-        print 'No pcap files to work on'
+        print('No pcap files to work on')
         exit()
     res_files = []
     counter = 0
@@ -22,25 +22,22 @@ def get_file_list(network_dir, max_num):
 def output_on_file(red_p_list, const_pckts):
     with open('pcap_diff.txt', 'w') as out_file:
         out_file.write(
-            '{:36}\t{:10}\t{:10}\t{:10}\t{:10}\t{:10}\n'.format(
+            '{:36}\t{:10}\t{:10}\t{:10}\n'.format(
                 'Log file',
                 'Different',
                 'Num TCP',
-                'Num UDP',
-                'Num ICMP',
-                'Num Other'
+                'Num UDP'
             )
         )
         for red_p in red_p_list:
             out_file.write(
-                '{:36}\t{:10}\t{:10}\t{:10}\t{:10}\t{:10}\n'.format(
+                '{:36}\t{:10}\t{:10}\t{:10}\n'.format(
                     red_p.name,
                     str(len(red_p.diff_pckts)),
                     str(red_p.num_tcp),
-                    str(red_p.num_udp),
-                    str(red_p.num_icmp),
-                    str(red_p.num_other)
+                    str(red_p.num_udp)
                 )
             )
         out_file.write('\nConstant Summaries\n')
-        pprint(const_pckts, out_file)
+        for key in sorted(const_pckts):
+            print(key, file=out_file)
